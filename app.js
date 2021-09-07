@@ -20,63 +20,72 @@ app.use(express.urlencoded());
 app.use(express.json());
 
 //Home page
-app.get('/', (req, res) => {
-    res.render('form_add_book');
-});
-
-//List all books (page)
-app.get('/books', (req, res) => {
-    Books.find({}, (err, element) => {
-        if (err) return res.status(500).send('Erro ao consultar livros');
-        res.render('books', { items: element });
-    });
-});
-
-const arrebita = () => {
-    let temp_book = new Books();
-    temp_book.name = "sdassa";
-    temp_book.qtd = 12;
-    temp_book.code = "asdsdadsa";
-    temp_book.author = "asdsdadsa";
-    temp_book.synopsis = "asdsdadsa";
-    temp_book.rented = 0;
-    temp_book.save()
-}
-// for (let i = 0; i < 1000; i++) {
-//     console.log(i)
-//     arrebita()
-// }
-
-
-app.post('/addBook', (req, res) => {
-    let temp_book = new Books();
-    temp_book.name = req.body.name;
-    temp_book.qtd = req.body.qtd;
-    temp_book.code = req.body.code;
-    temp_book.author = req.body.author;
-    temp_book.synopsis = req.body.synopsis;
-    temp_book.rented = 0;
-    temp_book.save((err) => {
-        if (err) return res.status(500).send('Erro ao cadastrar livro');
-        return res.redirect('/books');
+app.route('/add')
+    .get((req, res) => {
+        res.render('form_add_book');
     })
-})
+    .post((req, res) => {
+        let temp_book = new Books();
+        temp_book.name = req.body.name;
+        temp_book.qtd = req.body.qtd;
+        temp_book.code = req.body.code;
+        temp_book.author = req.body.author;
+        temp_book.synopsis = req.body.synopsis;
+        temp_book.rented = 0;
+        temp_book.save((err) => {
+            if (err) return res.status(500).send('Erro ao cadastrar livro');
+            return res.redirect('/books');
+        })
+    });
 
-app.get('/delete/:id', (req, res) => {
+app.route('/')
+    .get((req, res) => {
+        res.redirect('/books');
+    });
+
+
+app.route('/books')
+    .get((req, res) => {
+        Books.find({}, (err, element) => {
+            if (err) return res.status(500).send('Erro ao consultar livros');
+            res.render('books', { items: element });
+        });
+    });
+
+app.post('/delete/:id', (req, res) => {
+    console.log( "opa")
     id_to_delete = req.params.id
     Books.deleteOne({ _id: id_to_delete }, (err, result) => {
         console.log(result);
         if (err) return res.status(500).send("Erro ao consultar livro");
-    })
+    });
     res.redirect('/books');
-})
+});
 
-app.get('/edit/:id', (req, res) => {
+app.post('/edit/:id', (req, res) => {
     Books.findById(req.params.id, (err, result) => {
         if (err) return res.status(500).send("Erro ao consultar livro");
         res.render('form_edit_book', { item: result });
     })
 })
+
+app.post('/edit', (req, res) => {
+    Books.findById(req.body.id, (err, element) => {
+        if (err)
+            return res.status(500).send("Erro ao consultar livro");
+        element.name = req.body.name;
+        element.qtd = req.body.qtd;
+        element.code = req.body.code;
+        element.author = req.body.author;
+        element.synopsis = req.body.synopsis;
+        element.save(err => {
+            if (err)
+                return res.status(500).send("Erro ao cadastrar livro");
+
+            return res.redirect('/books');
+        });
+    });
+});
 
 app.post('/search', (req, res) => {
     console.log(typeof req.body.search);
@@ -91,24 +100,6 @@ app.post('/search', (req, res) => {
         console.log(result);
         if (err) return res.status(500).send("Erro ao consultar livro");
         res.render('books_search', { items: result });
-    })
-})
-
-app.post('/editBook', (req, res) => {
-    Books.findById(req.body.id, (err, element) => {
-        if (err)
-            return res.status(500).send("Erro ao consultar livro");
-        element.name = req.body.name;
-        element.qtd = req.body.qtd;
-        element.code = req.body.code;
-        element.author = req.body.author;
-        element.synopsis = req.body.synopsis;
-        element.save(err => {
-            if (err)
-                return res.status(500).send("Erro ao cadastrar livro");
-
-            return res.redirect('/books');
-        })
     })
 })
 
