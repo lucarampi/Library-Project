@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const credentials = require('./credentials.json');
 const app = express();
 
+
 mongoose.connect(credentials.db.mongoDB.host, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const Books = mongoose.model('books', {
@@ -18,6 +19,7 @@ app.set('view engine', 'ejs');
 app.set('views', __dirname, '/views');
 app.use(express.urlencoded());
 app.use(express.json());
+app.use(express.static("public"));
 
 //Home page
 app.route('/add')
@@ -43,7 +45,6 @@ app.route('/')
         res.redirect('/books');
     });
 
-
 app.route('/books')
     .get((req, res) => {
         Books.find({}, (err, element) => {
@@ -53,7 +54,7 @@ app.route('/books')
     });
 
 app.post('/delete/:id', (req, res) => {
-    console.log( "opa")
+    console.log(req)
     id_to_delete = req.params.id
     Books.deleteOne({ _id: id_to_delete }, (err, result) => {
         console.log(result);
@@ -62,6 +63,7 @@ app.post('/delete/:id', (req, res) => {
     res.redirect('/books');
 });
 
+
 app.post('/edit/:id', (req, res) => {
     Books.findById(req.params.id, (err, result) => {
         if (err) return res.status(500).send("Erro ao consultar livro");
@@ -69,19 +71,18 @@ app.post('/edit/:id', (req, res) => {
     })
 })
 
-app.post('/edit', (req, res) => {
-    Books.findById(req.body.id, (err, element) => {
+app.post('/editBook', (req, res) => {
+    Books.findById(req.body.id, (err, temp_book) => {
         if (err)
-            return res.status(500).send("Erro ao consultar livro");
-        element.name = req.body.name;
-        element.qtd = req.body.qtd;
-        element.code = req.body.code;
-        element.author = req.body.author;
-        element.synopsis = req.body.synopsis;
-        element.save(err => {
+            return res.status(500).send("Erro ao consultar livro");;
+        temp_book.name = req.body.name;
+        temp_book.qtd = req.body.qtd;
+        temp_book.code = req.body.code;
+        temp_book.author = req.body.author;
+        temp_book.synopsis = req.body.synopsis;
+        temp_book.save(err => {
             if (err)
                 return res.status(500).send("Erro ao cadastrar livro");
-
             return res.redirect('/books');
         });
     });
