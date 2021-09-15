@@ -14,79 +14,186 @@
 
 <body>
     <main class="container ">
-        <div class="row">
-            <div class="col-12">
-                <article class="row mt-5 align-items-center">
-                    <section class="col-3">
-                        <h1>Books list</h1>
-                    </section>
-                    <section class="col-7">
-                        <form action="/search" method="POST" class="form form-inline row">
-                            <input class="form-control col-12 w-100" type="search" id="search" name="search"
-                                placeholder="Search book...">
-                        </form>
-                    </section>
-                    <section class="col-2 text-right">
-                        <a href="/add" class="btn btn-md btn-primary">Add new book</a>
-                    </section>
-                </article>
+        <div class="row align-items-center ">
+            <section class="col-12 mt-3 text-center">
+                <% if (user.logged==0) { %>
+                    <div class="alert alert-warning"> Nenhum usuário logado</div>
+                    <table class="table">
+                        <thead>
+                            <th scope="col">User</th>
+                            <th scope="col">Password</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Permissions</th>
 
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>
-                                Name
-                            </th>
-                            <th class="text-center">
-                                Author
-                            </th>
-                            <th class="text-center">
-                                Qtd. Available
-                            </th>
-                            <th class="text-center">
-                                Code
-                            </th>
-                            <th class="text-right">
-                                Options
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (items.length==0) { %>
-                            <div class="alert alert-warning"> Não existem dados cadastrados.</div>
+                        </thead>
+                        <tbody>
+
+                            <tr scope="row">
+                                <td>admin</td>
+                                <td>12345</td>
+                                <td>1 - Administrator</td>
+                                <td>Everything, including add/edit/delete items from DB</td>
+                            </tr>
+                            <tr scope="row">
+                                <td>user</td>
+                                <td>1234</td>
+                                <td>0 - Common user (Default)</td>
+                                <td>Search books only</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <% } else {%>
+                        <% if (user.role==1) {%>
+                            <p>Tipo: Admin</p>
 
                             <% } else {%>
-                                <% items.forEach(element=> { %>
-                                    <tr >
-                                        <td class="align-middle">
-                                            <%= element.name %>
-                                        </td>
-                                        <td class="text-center align-middle">
-                                            <%= element.author %>
-                                        </td>
-                                        <td class="text-center align-middle">
-                                            <%= element.qtd %>
-                                        </td>
-                                        <td class="text-center align-middle">
-                                            <%= element.code %>
-                                        </td>
-                                        <td class="col-2">
-                                            <div class="row">
-                                                <form class="form col-6 p-0" action="/edit/<%= element._id %>" method="POST">
-                                                    <button type="submit" class="btn btn-warning form-group col-11">Edit</button>
-                                                </form>
-                                                <form class="form col-6 p-0" action="/delete/<%= element._id %>" method="POST">
-                                                    <button type="submit" class="btn btn-danger form-group col-11">Delete</button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <% }) %>
+                                <p>Tipo: Comum</p>
+                                <% }}%>
 
-                                        <% }%>
-                    </tbody>
-                </table>
-            </div>
+            </section>
+            <section class="col-4">
+                <h1>Books list</h1>
+            </section>
+            <section class="col-3">
+                <form action="/search" method="POST" class="form form-inline row">
+                    <input class="form-control col-12 w-100" type="search" id="search" name="search"
+                        placeholder="Search book...">
+                </form>
+            </section>
+
+            <section class="col-2 text-right">
+                <% if(user.logged==0) {%>
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                        Login
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Entre no sistema</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="/login" method="POST">
+                                        <div class="form-group tec">
+                                            <input class="form-control" type="text" id="name" name="name" required
+                                                placeholder="User">
+                                        </div>
+                                        <div class="form-group">
+                                            <input class="form-control" type="password" id="password" name="password"
+                                                placeholder="Password" required>
+                                        </div>
+                                        <input type="hidden" name="id"" />
+                                        </div>
+                                        <div class=" modal-footer">
+                                        <button class="btn btn-primary" type="submit">Login</button>
+                                    </form>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <%}else{%>
+                        <form action="/logout" method="POST">
+                            <button class="btn btn-light" type="submit">
+                                Logout
+                            </button>
+                        </form>
+                        <%}%>
+
+            </section>
+            <section class="col-3 text-right">
+
+                <% if( user.role==1){ %>
+                    <a href="/add" class="btn btn-md btn-primary">Add new book</a>
+                    <% }else {%>
+                        <a class="btn btn-md disabled btn-primary">Add new book</a>
+                        <% }%>
+
+
+
+
+
+            </section>
+
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>
+                            Name
+                        </th>
+                        <th class="text-center">
+                            Author
+                        </th>
+                        <th class="text-center">
+                            Qtd. Available
+                        </th>
+                        <th class="text-center">
+                            Code
+                        </th>
+                        <th class="text-center">
+                            Options
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (items.length==0) { %>
+                        <div class="alert alert-warning"> Não existem dados cadastrados.</div>
+
+                        <% } else {%>
+                            <% items.forEach(element=> { %>
+                                <tr>
+                                    <td class="align-middle">
+                                        <%= element.name %>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <%= element.author %>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <%= element.qtd %>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <%= element.code %>
+                                    </td>
+                                    <td class="col-2">
+                                        <div class="row justify-content-around">
+
+
+                                            <!-- ------------------------------------------------------------------------------------------- -->
+
+                                            <% if( user.role==1){ %>
+                                                <form class="form col-6 p-0" action="/edit/<%= element._id %>"
+                                                    method="POST">
+                                                    <button type="submit"
+                                                        class="btn btn-warning form-group col-11">Edit</button>
+                                                </form>
+                                                <form class="form col-6 p-0" action="/delete/<%= element._id %>"
+                                                    method="POST">
+                                                    <button type="submit"
+                                                        class="btn btn-danger  form-group col-11">Delete</button>
+                                                </form>
+                                                <% }else {%>
+
+                                                    <a class="form col-5 btn btn-warning disabled form-group m-0">Edit</a>
+                                                    <a class="form col-5 btn btn-danger disabled form-group m-0">Delete</a>
+
+                                                    <% }%>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% }) %>
+
+                                    <% }%>
+                </tbody>
+            </table>
+
         </div>
     </main>
 

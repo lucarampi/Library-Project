@@ -1,18 +1,25 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const mongooseBook = require('mongoose');
+const mongooseUser = require('mongoose');
 const credentials = require('./credentials.json');
+const logged_user = require('./logged.json')
 const app = express();
 
+mongooseBook.connect(credentials.db.mongoDB.host, { useNewUrlParser: true, useUnifiedTopology: true });
 
-mongoose.connect(credentials.db.mongoDB.host, { useNewUrlParser: true, useUnifiedTopology: true });
-
-const Books = mongoose.model('books', {
+const Books = mongooseBook.model('books', {
     name: String,
     author: String,
     qtd: Number,
     code: String,
     synopsis: String,
     rented: Number
+});
+
+const Users = mongooseBook.model('users', {
+    name: String,
+    password: Number,
+    role: Number
 });
 
 app.set('view engine', 'ejs');
@@ -49,7 +56,7 @@ app.route('/books')
     .get((req, res) => {
         Books.find({}, (err, element) => {
             if (err) return res.status(500).send('Erro ao consultar livros');
-            res.render('books', { items: element });
+            res.render('books', { items: element, user: require('./logged.json') });
         });
     });
 
@@ -63,7 +70,6 @@ app.post('/delete/:id', (req, res) => {
     res.redirect('/books');
 });
 
-
 app.post('/edit/:id', (req, res) => {
     Books.findById(req.params.id, (err, result) => {
         if (err) return res.status(500).send("Erro ao consultar livro");
@@ -74,7 +80,7 @@ app.post('/edit/:id', (req, res) => {
 app.post('/editBook', (req, res) => {
     Books.findById(req.body.id, (err, temp_book) => {
         if (err)
-            return res.status(500).send("Erro ao consultar livro");;
+            return res.status(500).send("Erro ao consultar livro");
         temp_book.name = req.body.name;
         temp_book.qtd = req.body.qtd;
         temp_book.code = req.body.code;
@@ -87,6 +93,39 @@ app.post('/editBook', (req, res) => {
         });
     });
 });
+
+app.post('/login', (req, res) => {
+    const {
+        name, password
+    } = req.body
+
+    console.log(name)
+    console.log(password)
+
+    Users.find({ password: password }, (err, temp_user) => {
+        console.log(temp_user)
+        if (err)
+            return res.status(500).send("Erro ao encontrar usuário, utilize credenciais válidas");
+        const {
+            name, role
+        } = temp_user[0]
+
+        logged_user.logged = name
+        logged_user.role = role
+        console.log(logged_user)
+        return res.redirect('/books');
+
+    });
+});
+
+app.post('/logout', (req, res) => {
+    logged_user.logged = 0
+    logged_user.role = 0
+    return res.redirect('/books');
+
+});
+
+
 
 app.post('/search', (req, res) => {
     console.log(typeof req.body.search);
